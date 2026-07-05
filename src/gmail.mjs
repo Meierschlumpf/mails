@@ -152,6 +152,7 @@ function parseMessagePart(part, messageId) {
 function decodeMessage(data, encoding, messageId) {
   if (encoding.toLowerCase() === "base64") return data;
   if (encoding.toLowerCase() === "quoted-printable") return data;
+  if (encoding.toLowerCase() === "8bit") return data;
   if (encoding.toLowerCase() === "7bit") return decode7BitMessage(data);
 
   throw new Error(
