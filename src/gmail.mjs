@@ -36,6 +36,9 @@ async function listMessages() {
     });
 
     messages.push({
+      id: getResponse.data.id,
+      threadId: getResponse.data.threadId,
+      labelIds: getResponse.data.labelIds,
       subject:
         getResponse.data.payload.headers.find((x) => x.name === "Subject")
           ?.value ?? null,
