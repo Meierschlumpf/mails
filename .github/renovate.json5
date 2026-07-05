@@ -12,6 +12,8 @@
       automerge: false,
     },
   ],
+  platform: "github",
+  repositories: ["Meierschlumpf/mails"],
   updateInternalDeps: true,
   rangeStrategy: "bump",
   automerge: false,
