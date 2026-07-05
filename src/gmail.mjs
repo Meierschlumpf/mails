@@ -50,7 +50,10 @@ async function listMessages() {
         getResponse.data.payload.headers.find(({ name }) => name === "Date")
           ?.value,
       ),
-      content: parseMessageContent(getResponse.data.payload),
+      content: parseMessageContent(
+        getResponse.data.payload,
+        getResponse.data.id,
+      ),
     });
   }
 
@@ -89,16 +92,16 @@ function parseMessageContent(payload) {
   );
 
   if (plaintextPart) {
-    return parseMessagePart(plaintextPart);
+    return parseMessagePart(plaintextPart, messageId);
   }
 
   const dataPart = payload.parts.find(({ body }) => "data" in body);
   if (!dataPart) return null;
 
-  return parseMessagePart(dataPart);
+  return parseMessagePart(dataPart, messageId);
 }
 
-function parseMessagePart(part) {
+function parseMessagePart(part, messageId) {
   const contentType = part.headers.find(
     (x) => x.name === "Content-Type",
   )?.value;
@@ -107,7 +110,7 @@ function parseMessagePart(part) {
   )?.value;
 
   const raw = Buffer.from(part.body.data, "base64").toString("utf-8");
-  const decoded = decodeMessage(raw, encoding);
+  const decoded = decodeMessage(raw, encoding, messageId);
 
   if (contentType.includes("text/plain")) {
     return decoded
@@ -123,12 +126,14 @@ function parseMessagePart(part) {
     .trim(); // remove whitespace around
 }
 
-function decodeMessage(data, encoding) {
-  if (encoding === "base64") return data;
-  if (encoding === "quoted-printable") return data;
-  if (encoding === "7bit") {
-    return decode7BitMessage(data);
-  }
+function decodeMessage(data, encoding, messageId) {
+  if (encoding.toLowerCase() === "base64") return data;
+  if (encoding.toLowerCase() === "quoted-printable") return data;
+  if (encoding.toLowerCase() === "7bit") return decode7BitMessage(data);
+
+  throw new Error(
+    `Unsupported mail encoding: ${encoding.toLowerCase()} id=${messageId}`,
+  );
 }
 
 function decode7BitMessage(data) {
