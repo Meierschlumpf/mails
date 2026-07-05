@@ -1,0 +1,8 @@
+catalog:
+  "@types/node": 24.13.2
+  oxfmt: 0.56.0
+  oxlint: 1.71.0
+catalogMode: strict
+engineStrict: true
+minimumReleaseAge: 4320
+savePrefix: ""

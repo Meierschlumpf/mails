@@ -1,0 +1,44 @@
+name: "[PR] Code Quality"
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: ["*"]
+  merge_group:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  FORCE_COLOR: 3
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup
+        uses: ./.github/actions/setup-pnpm.yml
+
+      - name: Lint
+        run: pnpm turbo lint --affected
+
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup
+        uses: ./.github/actions/setup-pnpm.yml
+
+      - name: Format
+        run: pnpm turbo format --affected --continue
