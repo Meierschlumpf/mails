@@ -24,10 +24,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup
-        uses: ./.github/actions/setup-pnpm.yml
+        uses: ./.github/actions/setup-pnpm
 
       - name: Lint
-        run: pnpm turbo lint --affected
+        run: pnpm lint
 
   format:
     runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup
-        uses: ./.github/actions/setup-pnpm.yml
+        uses: ./.github/actions/setup-pnpm
 
       - name: Format
-        run: pnpm turbo format --affected --continue
+        run: pnpm format
