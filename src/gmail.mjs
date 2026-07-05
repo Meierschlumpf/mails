@@ -82,10 +82,33 @@ function parseFrom(from) {
   }
 }
 
-function parseMessageContent(payload) {
-  if (payload.parts.length === 0) return null;
+function extractParts(part, messageId) {
+  // multipart/alternative provides different versions of same email
+  // multipart/mixed contains different types of content like attachement and multipart/alternative
+  if (
+    ["multipart/alternative", "multipart/mixed"].includes(
+      part.mimeType.toLowerCase(),
+    )
+  ) {
+    return part.parts.flatMap((innerPart) =>
+      extractParts(innerPart, messageId),
+    );
+  }
+  if (part.mimeType.toLowerCase().startsWith("multipart/")) {
+    console.warn(
+      `Found new multipart mimeType id=${messageId} mimeType=${part.mimeType}`,
+    );
+  }
 
-  const plaintextPart = payload.parts.find(({ headers }) =>
+  return [part];
+}
+
+function parseMessageContent(payload, messageId) {
+  const parts = extractParts(payload, messageId);
+
+  if (parts.length === 0) return null;
+
+  const plaintextPart = parts.find(({ headers }) =>
     headers
       .find((x) => x.name === "Content-Type")
       ?.value.includes("text/plain"),
@@ -95,7 +118,7 @@ function parseMessageContent(payload) {
     return parseMessagePart(plaintextPart, messageId);
   }
 
-  const dataPart = payload.parts.find(({ body }) => "data" in body);
+  const dataPart = parts.find(({ body }) => "data" in body);
   if (!dataPart) return null;
 
   return parseMessagePart(dataPart, messageId);
