@@ -43,6 +43,10 @@ async function listMessages() {
         getResponse.data.payload.headers.find((x) => x.name === "From")
           ?.value ?? null,
       ),
+      date: new Date(
+        getResponse.data.payload.headers.find(({ name }) => name === "Date")
+          ?.value,
+      ),
       content: parseMessageContent(getResponse.data.payload),
     });
   }
