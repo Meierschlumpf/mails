@@ -160,9 +160,11 @@ function decodeMessage(data, encoding, messageId) {
 }
 
 function decode7BitMessage(data) {
-  const binaryString = data.replace(/=([0-9A-F]{2})/g, (_, hex) =>
-    String.fromCharCode(parseInt(hex, 16)),
-  );
+  const binaryString = data
+    .replaceAll("=\n", "") // replace quoted-printable soft line breaks
+    .replace(/=([0-9A-F]{2})/g, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16)),
+    ); // decode non ascii character encoding in format =5F (equal sign followed by two uppercase hex characters)
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);
