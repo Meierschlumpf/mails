@@ -60,11 +60,23 @@ async function listMessages() {
 
 function parseFrom(from) {
   if (!from) return null;
-  const result = from.match(/(.+)\s<([^>]+)>/);
-  return {
-    name: result.at(1).replaceAll('"', ""),
-    email: result.at(2),
-  };
+
+  if (!from.includes("<")) {
+    return {
+      name: null,
+      email: from,
+    };
+  }
+
+  try {
+    const result = from.match(/(.+)\s<([^>]+)>/);
+    return {
+      name: result.at(1).replaceAll('"', ""),
+      email: result.at(2),
+    };
+  } catch (cause) {
+    throw new Error(`Failed to parse from value='${from}'`, { cause });
+  }
 }
 
 function parseMessageContent(payload) {
