@@ -45,3 +45,9 @@ yarn-error.log*
 
 # logs
 *.log
+
+# google cloud credentials
+credentials.json
+
+# temporary local files
+messages.json

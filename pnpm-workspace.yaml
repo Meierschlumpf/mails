@@ -1,5 +1,7 @@
 catalog:
+  "@google-cloud/local-auth": 2.1.0
   "@types/node": 24.13.2
+  googleapis: ^105.0.0
   oxfmt: 0.56.0
   oxlint: 1.71.0
 catalogMode: strict
