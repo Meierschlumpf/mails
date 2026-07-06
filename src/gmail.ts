@@ -57,10 +57,7 @@ async function listMessages() {
       subject,
       from: parseFrom(from),
       date: new Date(date ?? ""),
-      content: parseMessageContent(
-        getResponse.data.payload,
-        getResponse.data.id,
-      ),
+      content: parseMessageContent(getResponse.data.payload, getResponse.data.id),
     });
   }
 
@@ -102,37 +99,22 @@ function parseFrom(from: string | null): From | null {
   }
 }
 
-function extractParts(
-  part: gmail_v1.Schema$MessagePart,
-  messageId: string,
-): gmail_v1.Schema$MessagePart[] {
+function extractParts(part: gmail_v1.Schema$MessagePart, messageId: string): gmail_v1.Schema$MessagePart[] {
   if (!part.mimeType) return [part];
 
   // multipart/alternative provides different versions of same email
   // multipart/mixed contains different types of content like attachement and multipart/alternative
-  if (
-    ["multipart/alternative", "multipart/mixed"].includes(
-      part.mimeType.toLowerCase(),
-    ) &&
-    part.parts !== undefined
-  ) {
-    return part.parts.flatMap((innerPart) =>
-      extractParts(innerPart, messageId),
-    );
+  if (["multipart/alternative", "multipart/mixed"].includes(part.mimeType.toLowerCase()) && part.parts !== undefined) {
+    return part.parts.flatMap((innerPart) => extractParts(innerPart, messageId));
   }
   if (part.mimeType.toLowerCase().startsWith("multipart/")) {
-    console.warn(
-      `Found new multipart mimeType id=${messageId} mimeType=${part.mimeType}`,
-    );
+    console.warn(`Found new multipart mimeType id=${messageId} mimeType=${part.mimeType}`);
   }
 
   return [part];
 }
 
-function parseMessageContent(
-  payload: gmail_v1.Schema$MessagePart,
-  messageId: string,
-) {
+function parseMessageContent(payload: gmail_v1.Schema$MessagePart, messageId: string) {
   const parts = extractParts(payload, messageId);
 
   if (parts.length === 0) return null;
@@ -145,29 +127,18 @@ function parseMessageContent(
     return parseMessagePart(plaintextPart, messageId);
   }
 
-  const dataPart = parts.find(
-    ({ body }) => body !== undefined && "data" in body,
-  );
+  const dataPart = parts.find(({ body }) => body !== undefined && "data" in body);
   if (!dataPart) return null;
 
   return parseMessagePart(dataPart, messageId);
 }
 
-function parseMessagePart(
-  part: gmail_v1.Schema$MessagePart,
-  messageId: string,
-) {
-  const contentType = part.headers?.find(
-    (x) => x.name === "Content-Type",
-  )?.value;
-  const encoding = part.headers?.find(
-    (x) => x.name === "Content-Transfer-Encoding",
-  )?.value;
+function parseMessagePart(part: gmail_v1.Schema$MessagePart, messageId: string) {
+  const contentType = part.headers?.find((x) => x.name === "Content-Type")?.value;
+  const encoding = part.headers?.find((x) => x.name === "Content-Transfer-Encoding")?.value;
 
   if (!encoding) {
-    throw new Error(
-      `Missing Content-Transfer-Encoding header id=${messageId} contentType=${contentType}`,
-    );
+    throw new Error(`Missing Content-Transfer-Encoding header id=${messageId} contentType=${contentType}`);
   }
 
   // oxlint-disable-next-line typescript/no-non-null-assertion
@@ -194,17 +165,13 @@ function decodeMessage(data: string, encoding: string, messageId: string) {
   if (encoding.toLowerCase() === "8bit") return data;
   if (encoding.toLowerCase() === "7bit") return decode7BitMessage(data);
 
-  throw new Error(
-    `Unsupported mail encoding: ${encoding.toLowerCase()} id=${messageId}`,
-  );
+  throw new Error(`Unsupported mail encoding: ${encoding.toLowerCase()} id=${messageId}`);
 }
 
 function decode7BitMessage(data: string) {
   const binaryString = data
     .replaceAll("=\n", "") // replace quoted-printable soft line breaks
-    .replace(/=([0-9A-F]{2})/g, (_, hex) =>
-      String.fromCharCode(parseInt(hex, 16)),
-    ); // decode non ascii character encoding in format =5F (equal sign followed by two uppercase hex characters)
+    .replace(/=([0-9A-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16))); // decode non ascii character encoding in format =5F (equal sign followed by two uppercase hex characters)
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);

@@ -16,6 +16,10 @@
     "format:fix": "oxfmt .",
     "lint": "oxlint"
   },
+  "dependencies": {
+    "@google-cloud/local-auth": "catalog:",
+    "googleapis": "catalog:"
+  },
   "devDependencies": {
     "@types/node": "catalog:",
     "oxfmt": "catalog:",
@@ -25,9 +29,5 @@
     "node": ">=24.18.0",
     "pnpm": ">=11.9.0"
   },
-  "packageManager": "pnpm@11.9.0",
-  "dependencies": {
-    "@google-cloud/local-auth": "catalog:",
-    "googleapis": "catalog:"
-  }
+  "packageManager": "pnpm@11.9.0"
 }
